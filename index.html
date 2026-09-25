@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>John John's Wheel-athon</title>
+  <meta name="theme-color" content="#07060c" />
+  <style>
+:root {
+  --bg0: #07060c;
+  --bg1: #12101c;
+  --ink: #f4efe6;
+  --muted: #b7b0c4;
+  --gold: #e8c36a;
+  --gold-2: #f6e3a8;
+  --stroke: rgba(244, 239, 230, 0.12);
+  --glow: 0 0 80px rgba(232, 195, 106, 0.18);
+  --card: rgba(18, 16, 28, 0.78);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { min-height: 100%; }
+body {
+  font-family: Outfit, system-ui, sans-serif;
+  color: var(--ink);
+  background:
+    radial-gradient(1200px 700px at 15% -10%, rgba(185, 164, 240, 0.18), transparent 55%),
+    radial-gradient(900px 600px at 90% 10%, rgba(232, 154, 176, 0.14), transparent 50%),
+    linear-gradient(180deg, var(--bg0), var(--bg1));
+  overflow-x: hidden;
+}
+.orb {
+  position: fixed; width: 42vmax; height: 42vmax; border-radius: 50%;
+  filter: blur(80px); opacity: 0.32; pointer-events: none; z-index: 0;
+  animation: drift 18s ease-in-out infinite alternate;
+}
+.orb.a { background: #5b3d9a; top: -12vmax; left: -8vmax; }
+.orb.b { background: #8a3a5a; bottom: -16vmax; right: -10vmax; animation-delay: -6s; }
+@keyframes drift {
+  from { transform: translate(0,0) scale(1); }
+  to { transform: translate(4vmax, 3vmax) scale(1.08); }
+}
+
+.app { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; padding: 22px 18px calc(40px + var(--safe-b)); }
+header { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 22px; }
+.brand { display: flex; flex-direction: column; gap: 4px; }
+.eyebrow { letter-spacing: 0.28em; text-transform: uppercase; font-size: 11px; color: var(--gold); font-weight: 500; }
+h1 { font-family: "Cormorant Garamond", Georgia, serif; font-weight: 500; font-size: clamp(34px, 5vw, 54px); line-height: 0.95; }
+h1 em { font-style: italic; color: var(--gold-2); }
+.sub { color: var(--muted); font-weight: 300; margin-top: 8px; max-width: 52ch; }
+.header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.stage { display: grid; grid-template-columns: 1.12fr 0.88fr; gap: 24px; align-items: start; }
+@media (max-width: 900px) {
+  .stage { grid-template-columns: 1fr; }
+  header { flex-direction: column; align-items: flex-start; }
+}
+
+.card, .panel {
+  background: linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.015));
+  border: 1px solid var(--stroke);
+  border-radius: 24px;
+  box-shadow: var(--glow), inset 0 1px 0 rgba(255,255,255,0.06);
+  backdrop-filter: blur(16px);
+}
+.wheel-card { padding: 8px 16px 20px; overflow: hidden; }
+
+.scene {
+  position: relative;
+  perspective: 980px;
+  perspective-origin: 50% 42%;
+  height: min(560px, 92vw);
+  display: grid;
+  place-items: center;
+}
+.shadow-disc {
+  position: absolute;
+  width: min(420px, 68vw);
+  height: 48px;
+  bottom: 38px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse at center, rgba(0,0,0,0.55), transparent 70%);
+  filter: blur(6px);
+  z-index: 0;
+}
+.stand {
+  position: absolute;
+  bottom: 18px;
+  width: 86px;
+  height: 78px;
+  background:
+    linear-gradient(90deg, #3a2a12, #c9a45a 18%, #7a5a22 36%, #e8c36a 50%, #7a5a22 64%, #c9a45a 82%, #3a2a12);
+  clip-path: polygon(18% 0, 82% 0, 100% 100%, 0 100%);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+  z-index: 1;
+}
+.wheel-3d {
+  position: relative;
+  width: min(460px, 78vw);
+  aspect-ratio: 1;
+  transform: rotateX(26deg);
+  transform-style: preserve-3d;
+  z-index: 2;
+  transition: transform 0.4s ease;
+}
+.wheel-3d.spinning {
+  animation: wheelWobble 0.55s ease-in-out infinite;
+}
+@keyframes wheelWobble {
+  0%, 100% { transform: rotateX(26deg) rotateZ(-0.4deg); }
+  50% { transform: rotateX(24deg) rotateZ(0.4deg); }
+}
+.drum {
+  position: absolute;
+  inset: 2%;
+  border-radius: 50%;
+  transform: translateZ(-28px);
+  background:
+    repeating-conic-gradient(from 0deg, #6a4e1c 0 8deg, #d7b25a 8deg 16deg);
+  box-shadow:
+    0 22px 0 #3a2a10,
+    0 28px 0 #1a1208,
+    0 36px 40px rgba(0,0,0,0.45);
+  z-index: 0;
+}
+.wheel-wrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform: translateZ(10px);
+}
+canvas#wheel {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border-radius: 50%;
+  filter: drop-shadow(0 8px 18px rgba(0,0,0,0.35));
+}
+.pointer {
+  position: absolute; top: -10px; left: 50%; transform: translateX(-50%) translateZ(24px);
+  width: 0; height: 0;
+  border-left: 14px solid transparent; border-right: 14px solid transparent;
+  border-top: 28px solid var(--gold-2);
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.45)); z-index: 5;
+}
+.pointer::after {
+  content: ""; position: absolute; top: -30px; left: -7px; width: 14px; height: 14px;
+  background: var(--gold); border-radius: 50%; box-shadow: 0 0 16px var(--gold);
+}
+.hub {
+  position: absolute; inset: 42%; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff6d8, var(--gold) 40%, #8a6a28);
+  box-shadow: 0 0 0 6px rgba(7,6,12,0.55), 0 8px 24px rgba(0,0,0,0.4);
+  z-index: 3; pointer-events: none; transform: translateZ(16px);
+}
+
+.now-playing { margin: 6px auto 0; width: min(420px, 100%); }
+select {
+  width: 100%;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--stroke);
+  color: var(--ink);
+  border-radius: 14px;
+  padding: 11px 13px;
+  font: inherit;
+  outline: none;
+}
+.spin-row { display: flex; gap: 10px; justify-content: center; margin-top: 16px; flex-wrap: wrap; }
+
+button { font-family: inherit; cursor: pointer; border: 0; }
+.btn {
+  border-radius: 999px; padding: 12px 20px; font-weight: 600; letter-spacing: 0.02em;
+  transition: transform .15s ease, opacity .15s;
+}
+.btn:active { transform: translateY(1px) scale(0.98); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn-gold { background: linear-gradient(180deg, var(--gold-2), var(--gold)); color: #2a1d08; box-shadow: 0 10px 30px rgba(232,195,106,0.28); }
+.btn-ghost { background: rgba(255,255,255,0.06); color: var(--ink); border: 1px solid var(--stroke); }
+.btn-tiny { padding: 7px 11px; font-size: 12px; border-radius: 10px; background: rgba(255,255,255,0.06); color: var(--muted); border: 1px solid var(--stroke); }
+.btn-danger { color: #e7b4bc; }
+
+.panel { padding: 20px; }
+.tabs { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
+.tab {
+  flex: 1; min-width: 72px; padding: 8px 10px; border-radius: 12px; background: transparent;
+  color: var(--muted); border: 1px solid transparent; font-weight: 500;
+}
+.tab.active { background: rgba(255,255,255,0.07); color: var(--ink); border-color: var(--stroke); }
+.panel h2 { font-family: "Cormorant Garamond", Georgia, serif; font-size: 26px; font-weight: 500; margin-bottom: 4px; }
+.hint { color: var(--muted); font-size: 13px; margin-bottom: 14px; }
+.add, .share-row { display: flex; gap: 8px; }
+.add { margin-bottom: 12px; }
+input[type="text"], input[type="number"], .field {
+  flex: 1; background: rgba(255,255,255,0.05); border: 1px solid var(--stroke);
+  color: var(--ink); border-radius: 14px; padding: 11px 13px; font: inherit; outline: none; width: 100%;
+}
+input[type="number"] { max-width: 72px; text-align: center; }
+input:focus, select:focus { border-color: rgba(232,195,106,0.5); }
+label.k { display: block; font-size: 11px; color: var(--muted); margin: 0 0 6px; letter-spacing: 0.1em; text-transform: uppercase; }
+.title-row { margin-bottom: 12px; }
+.list { display: flex; flex-direction: column; gap: 8px; max-height: 280px; overflow: auto; }
+.item {
+  display: grid; grid-template-columns: 16px 1fr auto auto; gap: 10px; align-items: center;
+  background: rgba(255,255,255,0.04); border: 1px solid var(--stroke); border-radius: 12px; padding: 8px 10px;
+}
+.item.player { grid-template-columns: 16px 1fr auto; }
+.swatch { width: 14px; height: 14px; border-radius: 50%; box-shadow: 0 0 0 2px rgba(0,0,0,0.25); }
+.item input { background: transparent; border: 0; color: inherit; font: inherit; width: 100%; outline: none; }
+.qty { font-size: 11px; color: var(--muted); letter-spacing: 0.04em; }
+.share-box { margin-top: 8px; display: grid; gap: 8px; }
+.share-label { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold); margin-top: 6px; }
+.share-row input { font-size: 12px; color: var(--muted); background: rgba(0,0,0,0.28); }
+
+.library, .hits { display: grid; gap: 8px; }
+.lib-item, .hit-item {
+  display: flex; justify-content: space-between; gap: 10px; align-items: center;
+  padding: 12px; border: 1px solid var(--stroke); border-radius: 14px; background: rgba(255,255,255,0.04);
+}
+.lib-item b, .hit-item b { display: block; font-weight: 600; }
+.lib-item span, .hit-item span { color: var(--muted); font-size: 12px; }
+.lib-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.hit-item select {
+  width: 140px; padding: 7px 8px; border-radius: 10px; font-size: 13px;
+}
+
+.pane { display: none; }
+.pane.active { display: block; }
+
+.board {
+  margin-top: 22px;
+  padding: 18px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+@media (max-width: 700px) { .board { grid-template-columns: 1fr; } }
+.board h3 {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 22px;
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+.chips { display: flex; flex-wrap: wrap; gap: 8px; min-height: 36px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 7px 11px; border-radius: 999px;
+  background: rgba(255,255,255,0.06); border: 1px solid var(--stroke);
+  font-size: 13px;
+}
+.chip i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.chip em { font-style: normal; color: var(--gold-2); }
+
+.toast {
+  position: fixed; bottom: calc(20px + var(--safe-b)); left: 50%;
+  transform: translateX(-50%) translateY(16px);
+  background: #1b1826; border: 1px solid var(--stroke); color: var(--ink);
+  padding: 10px 16px; border-radius: 999px; opacity: 0; pointer-events: none; transition: .25s ease; z-index: 40;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+.modal {
+  position: fixed; inset: 0; background: rgba(4,3,8,0.62);
+  display: none; align-items: center; justify-content: center; z-index: 30; padding: 20px;
+}
+.modal.open { display: flex; }
+.modal-card {
+  width: min(440px, 100%);
+  background: linear-gradient(180deg, #1c1830, #100e18);
+  border: 1px solid rgba(232,195,106,0.28);
+  border-radius: 24px; padding: 32px 28px 24px; text-align: center;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.5); position: relative; overflow: hidden;
+}
+.modal-card h3 {
+  font-family: "Cormorant Garamond", Georgia, serif; font-size: 18px; font-weight: 500;
+  color: var(--gold); letter-spacing: 0.08em; text-transform: uppercase;
+}
+.winner { font-family: "Cormorant Garamond", Georgia, serif; font-size: clamp(34px, 7vw, 50px); margin: 10px 0 4px; line-height: 1.05; }
+.assignee { color: var(--gold-2); font-weight: 500; margin-bottom: 6px; }
+canvas#confetti { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+footer { margin-top: 26px; color: var(--muted); font-size: 12px; text-align: center; }
+.hidden { display: none !important; }
+.empty { color: var(--muted); font-size: 13px; }
+
+  </style>
+</head>
+<body>
+  <div class="orb a"></div>
+  <div class="orb b"></div>
+  <div class="app">
+    <header>
+      <div class="brand">
+        <div class="eyebrow">John John</div>
+        <h1>John John's <em>Wheel-athon</em></h1>
+        <p class="sub">Stack the same prize as many times as you want. Spin. The slice leaves the drum and lands in Hits, tagged with a name.</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-ghost" id="muteBtn" type="button" aria-pressed="false">Sound on</button>
+        <button class="btn btn-ghost" id="newBtn" type="button">New wheel</button>
+        <button class="btn btn-gold" id="saveBtn" type="button">Save to library</button>
+      </div>
+    </header>
+    <div class="stage">
+      <section class="card wheel-card">
+        <div class="scene">
+          <div class="stand"></div>
+          <div class="shadow-disc"></div>
+          <div class="wheel-3d" id="wheel3d">
+            <div class="drum"></div>
+            <div class="wheel-wrap">
+              <div class="pointer"></div>
+              <canvas id="wheel" width="900" height="900"></canvas>
+              <div class="hub"></div>
+            </div>
+          </div>
+        </div>
+        <div class="now-playing">
+          <label class="k" for="currentPlayer">This spin is for</label>
+          <select id="currentPlayer"></select>
+        </div>
+        <div class="spin-row">
+          <button class="btn btn-gold" id="spinBtn" type="button">Spin the wheel</button>
+          <button class="btn btn-ghost" id="shuffleBtn" type="button">Shuffle colors</button>
+        </div>
+      </section>
+      <aside class="panel">
+        <div class="tabs">
+          <button class="tab active" data-tab="compose" type="button">Prizes</button>
+          <button class="tab" data-tab="names" type="button">Names</button>
+          <button class="tab" data-tab="hits" type="button">Hits</button>
+          <button class="tab" data-tab="share" type="button">Share</button>
+          <button class="tab" data-tab="library" type="button">Library</button>
+        </div>
+        <div class="pane active" id="pane-compose">
+          <h2>Prizes</h2>
+          <p class="hint">Duplicates are allowed — each Add is its own slice. Same label keeps the same color.</p>
+          <div class="title-row">
+            <label class="k" for="wheelTitle">Wheel title</label>
+            <input type="text" id="wheelTitle" maxlength="80" placeholder="John John's Wheel-athon" />
+          </div>
+          <div class="add">
+            <input type="text" id="newItem" maxlength="60" placeholder="Prize name…" />
+            <input type="number" id="newQty" min="1" max="20" value="1" title="How many slices" />
+            <button class="btn btn-gold" id="addBtn" type="button">Add</button>
+          </div>
+          <div class="list" id="list"></div>
+        </div>
+        <div class="pane" id="pane-names">
+          <h2>Names</h2>
+          <p class="hint">Add people after the prizes are on the drum. Each hit is assigned to the name selected for that spin.</p>
+          <div class="add">
+            <input type="text" id="newName" maxlength="40" placeholder="Add a name…" />
+            <button class="btn btn-gold" id="addNameBtn" type="button">Add</button>
+          </div>
+          <div class="list" id="nameList"></div>
+        </div>
+        <div class="pane" id="pane-hits">
+          <h2>Hits</h2>
+          <p class="hint">Landed slices leave the wheel and stack here, tagged with a name. Restore puts a slice back on the drum.</p>
+          <div class="hits" id="hits"></div>
+        </div>
+        <div class="pane" id="pane-share">
+          <h2>Share</h2>
+          <p class="hint">Product link = the live wheel, names, and remaining slices. Result link = the latest hit.</p>
+          <div class="share-box">
+            <div class="share-label">As a product</div>
+            <div class="share-row">
+              <input id="shareWheel" readonly />
+              <button class="btn-tiny" data-copy="shareWheel" type="button">Copy</button>
+            </div>
+            <button class="btn btn-gold" id="shareProductBtn" type="button" style="margin-top:8px;width:100%">Share wheel</button>
+            <div class="share-label">As a result</div>
+            <div class="share-row">
+              <input id="shareResult" readonly placeholder="Spin first to mint a result link" />
+              <button class="btn-tiny" data-copy="shareResult" type="button">Copy</button>
+            </div>
+            <button class="btn btn-ghost" id="shareResultBtn" type="button" style="margin-top:8px;width:100%">Share result</button>
+          </div>
+        </div>
+        <div class="pane" id="pane-library">
+          <h2>Library</h2>
+          <p class="hint">Wheels stay on this device. Opening a shared product does not overwrite your library until you save.</p>
+          <div class="library" id="library"></div>
+        </div>
+      </aside>
+    </div>
+    <section class="card board">
+      <div class="board-col">
+        <h3>On the wheel</h3>
+        <div class="chips" id="wheelChips"></div>
+      </div>
+      <div class="board-col">
+        <h3>Hits</h3>
+        <div class="chips hits-chips" id="hitChips"></div>
+      </div>
+    </section>
+    <footer>John John's Wheel-athon · spin uses inertia, drag, and peg ticks</footer>
+  </div>
+  <div class="toast" id="toast"></div>
+  <div class="modal" id="modal">
+    <div class="modal-card">
+      <canvas id="confetti"></canvas>
+      <h3 id="modalEyebrow">Hit</h3>
+      <div class="winner" id="winnerName"></div>
+      <p class="assignee" id="winnerWho"></p>
+      <p class="hint" id="winnerMeta" style="margin-bottom:18px"></p>
+      <div class="spin-row">
+        <button class="btn btn-gold" id="shareResultModal" type="button">Share result</button>
+        <button class="btn btn-ghost" id="closeModal" type="button">Done</button>
+      </div>
+    </div>
+  </div>
+  <script>
+/* Procedural carnival loop — no copyrighted audio files. */
+const LuminaAudio = (() => {
+  let ctx = null;
+  let master = null;
+  let playing = false;
+  let muted = false;
+  let timer = null;
+  let step = 0;
+
+  const melody = [0, 4, 7, 12, 7, 4, 0, 7, 4, 9, 7, 12, 16, 12, 7, 4];
+  const bass = [0, 0, 7, 5, 0, 0, 5, 7];
+
+  function ensure() {
+    if (ctx) return;
+    ctx = new (window.AudioContext || window.webkitAudioContext)();
+    master = ctx.createGain();
+    master.gain.value = 0;
+    const filter = ctx.createBiquadFilter();
+    filter.type = "lowpass";
+    filter.frequency.value = 2400;
+    master.connect(filter);
+    filter.connect(ctx.destination);
+  }
+
+  function tone(freq, type, start, dur, gain, dest) {
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = type;
+    o.frequency.setValueAtTime(freq, start);
+    g.gain.setValueAtTime(0.0001, start);
+    g.gain.exponentialRampToValueAtTime(gain, start + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, start + dur);
+    o.connect(g);
+    g.connect(dest || master);
+    o.start(start);
+    o.stop(start + dur + 0.02);
+  }
+
+  function pegTick(strength) {
+    if (muted) return;
+    ensure();
+    if (ctx.state === "suspended") ctx.resume();
+    const t = ctx.currentTime;
+    const s = Math.max(0.15, Math.min(1, strength || 0.5));
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = "square";
+    o.frequency.setValueAtTime(620 + s * 420, t);
+    o.frequency.exponentialRampToValueAtTime(140, t + 0.05);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.05 + s * 0.07, t + 0.008);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.07);
+    o.connect(g);
+    g.connect(ctx.destination);
+    o.start(t);
+    o.stop(t + 0.09);
+  }
+
+  function click(start) {
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = "square";
+    o.frequency.setValueAtTime(880, start);
+    o.frequency.exponentialRampToValueAtTime(220, start + 0.06);
+    g.gain.setValueAtTime(0.08, start);
+    g.gain.exponentialRampToValueAtTime(0.0001, start + 0.08);
+    o.connect(g);
+    g.connect(master);
+    o.start(start);
+    o.stop(start + 0.1);
+  }
+
+  function tick() {
+    if (!playing || !ctx) return;
+    const t = ctx.currentTime;
+    const bpm = 132;
+    const beat = 60 / bpm;
+    const root = 196;
+    const m = melody[step % melody.length];
+    const b = bass[step % bass.length];
+    tone(root * Math.pow(2, m / 12), "triangle", t, beat * 0.7, 0.09);
+    tone(root * Math.pow(2, m / 12) * 2, "sine", t, beat * 0.45, 0.035);
+    if (step % 2 === 0) tone(root * 0.5 * Math.pow(2, b / 12), "sawtooth", t, beat * 0.9, 0.03);
+    if (step % 4 === 0) click(t);
+    step += 1;
+    timer = setTimeout(tick, beat * 1000);
+  }
+
+  async function start() {
+    if (muted) return;
+    ensure();
+    if (ctx.state === "suspended") await ctx.resume();
+    playing = true;
+    step = 0;
+    master.gain.cancelScheduledValues(ctx.currentTime);
+    master.gain.setValueAtTime(master.gain.value || 0.0001, ctx.currentTime);
+    master.gain.exponentialRampToValueAtTime(0.9, ctx.currentTime + 0.12);
+    clearTimeout(timer);
+    tick();
+  }
+
+  function stop() {
+    playing = false;
+    clearTimeout(timer);
+    if (!master || !ctx) return;
+    master.gain.cancelScheduledValues(ctx.currentTime);
+    master.gain.setValueAtTime(Math.max(master.gain.value, 0.0001), ctx.currentTime);
+    master.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.35);
+  }
+
+  function setMuted(value) {
+    muted = !!value;
+    if (muted) stop();
+  }
+
+  return { start, stop, setMuted, isMuted: () => muted, pegTick };
+})();
+
+const PALETTES = [
+  ["#f3c969","#e07a5f","#81b29a","#3d405b","#f2cc8f","#e9c46a","#2a9d8f","#e76f51","#264653","#b5838d"],
+  ["#c9b6ff","#ffc6ff","#b8c0ff","#bbd0ff","#ffd6a5","#fdffb6","#caffbf","#9bf6ff","#a0c4ff","#ffadad"],
+  ["#d4a373","#faedcd","#e9edc9","#ccd5ae","#bc6c25","#606c38","#283618","#dda15e","#bc4749","#6d6875"],
+  ["#ff6b6b","#f06595","#cc5de8","#845ef7","#5c7cfa","#339af0","#22b8cf","#20c997","#51cf66","#fcc419"]
+];
+
+const STORAGE_KEY = "lumina-wheels-v2";
+
+const state = {
+  id: uid(),
+  title: "John John's Wheel-athon",
+  items: defaultItems(0),
+  names: [],
+  hits: [],
+  currentNameId: null,
+  palette: 0,
+  spinning: false,
+  angle: 0,
+  lastWinner: null,
+  lastAt: null,
+  lastWho: null
+};
+
+const canvas = document.getElementById("wheel");
+const ctx = canvas.getContext("2d");
+const listEl = document.getElementById("list");
+const nameListEl = document.getElementById("nameList");
+const hitsEl = document.getElementById("hits");
+const titleEl = document.getElementById("wheelTitle");
+const newItemEl = document.getElementById("newItem");
+const newQtyEl = document.getElementById("newQty");
+const newNameEl = document.getElementById("newName");
+const libraryEl = document.getElementById("library");
+const playerSel = document.getElementById("currentPlayer");
+
+function uid() {
+  return crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2, 10);
+}
+
+function colorForLabel(text, fallbackIndex) {
+  const pal = PALETTES[state.palette];
+  const existing = state.items.find(x => x.text === text);
+  if (existing) return existing.color;
+  const hit = state.hits.find(x => x.text === text);
+  if (hit) return hit.color;
+  return pal[fallbackIndex % pal.length];
+}
+
+function defaultItems(p) {
+  const pal = PALETTES[p];
+  return ["Tacos", "Sushi", "Pizza", "Thai", "Burgers", "Stay in"].map((text, i) => ({
+    id: uid(), text, color: pal[i % pal.length]
+  }));
+}
+
+function encodePayload(extra = {}) {
+  const payload = {
+    t: state.title,
+    i: state.items.map(x => x.text),
+    n: state.names.map(x => x.text),
+    h: state.hits.map(x => ({ t: x.text, w: x.who || "", at: x.at })),
+    p: state.palette,
+    ...extra
+  };
+  return btoa(unescape(encodeURIComponent(JSON.stringify(payload))))
+    .replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+function decodePayload(s) {
+  try {
+    const pad = s.length % 4 === 0 ? "" : "=".repeat(4 - (s.length % 4));
+    return JSON.parse(decodeURIComponent(escape(atob(s.replace(/-/g, "+").replace(/_/g, "/") + pad))));
+  } catch {
+    return null;
+  }
+}
+
+function applyDecoded(data) {
+  if (!data || !Array.isArray(data.i)) return false;
+  state.title = data.t || "John John's Wheel-athon";
+  state.palette = Number.isInteger(data.p) ? data.p % PALETTES.length : 0;
+  const pal = PALETTES[state.palette];
+  state.items = (data.i || []).filter(t => String(t).trim()).map((text, n) => ({
+    id: uid(), text: String(text).slice(0, 60), color: pal[n % pal.length]
+  }));
+  // unify colors for identical labels
+  const seen = {};
+  state.items.forEach(it => {
+    if (seen[it.text]) it.color = seen[it.text];
+    else seen[it.text] = it.color;
+  });
+  state.names = (data.n || []).filter(Boolean).map(text => ({ id: uid(), text: String(text).slice(0, 40) }));
+  state.hits = (data.h || []).map(h => ({
+    id: uid(),
+    text: String(h.t || h).slice(0, 60),
+    who: h.w || "",
+    at: h.at || null,
+    color: colorForLabel(String(h.t || h), 0)
+  }));
+  state.id = uid();
+  state.lastWinner = data.win ? String(data.win) : null;
+  state.lastWho = data.who || null;
+  state.lastAt = data.at || null;
+  state.currentNameId = state.names[0] ? state.names[0].id : null;
+  return true;
+}
+
+function productUrl() {
+  const url = new URL(location.href);
+  url.hash = "";
+  url.search = "";
+  url.searchParams.set("w", encodePayload());
+  return url.toString();
+}
+
+function resultUrl(winner, at, who) {
+  const url = new URL(location.href);
+  url.hash = "";
+  url.search = "";
+  url.searchParams.set("r", encodePayload({
+    win: winner,
+    at: at || new Date().toISOString(),
+    who: who || ""
+  }));
+  return url.toString();
+}
+
+function loadLibrary() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); }
+  catch { return []; }
+}
+
+function saveLibrary(list) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+}
+
+function snapshotWheel() {
+  return {
+    id: state.id,
+    title: state.title,
+    items: state.items.map(i => i.text),
+    names: state.names.map(n => n.text),
+    hits: state.hits.map(h => ({ t: h.text, w: h.who || "", at: h.at })),
+    palette: state.palette,
+    updated: new Date().toISOString()
+  };
+}
+
+function persistCurrent() {
+  const lib = loadLibrary();
+  const snap = snapshotWheel();
+  const idx = lib.findIndex(w => w.id === state.id);
+  if (idx >= 0) lib[idx] = snap;
+  else lib.unshift(snap);
+  saveLibrary(lib.slice(0, 40));
+  renderLibrary();
+}
+
+function loadWheel(id) {
+  const found = loadLibrary().find(w => w.id === id);
+  if (!found) return;
+  applyDecoded({
+    t: found.title,
+    i: found.items || [],
+    n: found.names || [],
+    h: found.hits || [],
+    p: found.palette || 0
+  });
+  state.id = found.id;
+  renderAll();
+  toast("Loaded “" + found.title + "”");
+  history.replaceState(null, "", productUrl());
+}
+
+function deleteWheel(id) {
+  saveLibrary(loadLibrary().filter(w => w.id !== id));
+  if (state.id === id) state.id = uid();
+  renderLibrary();
+  toast("Removed from library");
+}
+
+function newWheel() {
+  state.id = uid();
+  state.title = "John John's Wheel-athon";
+  state.palette = 0;
+  state.items = [
+    { id: uid(), text: "Prize A", color: PALETTES[0][0] },
+    { id: uid(), text: "Prize B", color: PALETTES[0][1] }
+  ];
+  state.names = [];
+  state.hits = [];
+  state.currentNameId = null;
+  state.lastWinner = null;
+  state.lastWho = null;
+  renderAll();
+  persistCurrent();
+}
+
+function refreshShareFields() {
+  const w = document.getElementById("shareWheel");
+  const r = document.getElementById("shareResult");
+  if (w) w.value = productUrl();
+  if (r) r.value = state.lastWinner ? resultUrl(state.lastWinner, state.lastAt, state.lastWho) : "";
+}
+
+function contrastText(hex) {
+  const c = hex.replace("#", "");
+  const n = parseInt(c.length === 3 ? c.split("").map(x => x + x).join("") : c, 16);
+  const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+  return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.62 ? "#1a1420" : "#fff8ee";
+}
+
+function shade(hex, amt) {
+  const c = hex.replace("#", "");
+  const n = parseInt(c, 16);
+  let r = (n >> 16) + amt, g = ((n >> 8) & 255) + amt, b = (n & 255) + amt;
+  r = Math.max(0, Math.min(255, r));
+  g = Math.max(0, Math.min(255, g));
+  b = Math.max(0, Math.min(255, b));
+  return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+}
+
+function drawWheel() {
+  const { width, height } = canvas;
+  const cx = width / 2, cy = height / 2;
+  const r = width * 0.46;
+  ctx.clearRect(0, 0, width, height);
+  const items = state.items;
+  const n = Math.max(items.length, 1);
+  const slice = (Math.PI * 2) / n;
+
+  ctx.save();
+  ctx.translate(cx, cy);
+
+  // underside / thickness ring
+  ctx.beginPath();
+  ctx.arc(4, 10, r + 10, 0, Math.PI * 2);
+  ctx.fillStyle = "#2a1c0a";
+  ctx.fill();
+
+  ctx.rotate(state.angle);
+
+  if (!items.length) {
+    ctx.beginPath();
+    ctx.fillStyle = "#2a2438";
+    ctx.arc(0, 0, r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "rgba(246,227,168,0.7)";
+    ctx.font = "500 36px Cormorant Garamond, Georgia, serif";
+    ctx.textAlign = "center";
+    ctx.fillText("empty", 0, 10);
+  } else {
+    items.forEach((item, i) => {
+      const a0 = i * slice - Math.PI / 2;
+      const a1 = a0 + slice;
+      const mid = a0 + slice / 2;
+      const grd = ctx.createRadialGradient(-r * 0.2, -r * 0.25, r * 0.1, 0, 0, r);
+      grd.addColorStop(0, shade(item.color, 38));
+      grd.addColorStop(0.55, item.color);
+      grd.addColorStop(1, shade(item.color, -40));
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.arc(0, 0, r, a0, a1);
+      ctx.closePath();
+      ctx.fillStyle = grd;
+      ctx.fill();
+      ctx.strokeStyle = "rgba(7,6,12,0.45)";
+      ctx.lineWidth = 4;
+      ctx.stroke();
+
+      // peg at each divider
+      ctx.save();
+      ctx.rotate(a0);
+      ctx.beginPath();
+      ctx.arc(r - 2, 0, 7, 0, Math.PI * 2);
+      ctx.fillStyle = "#f6e3a8";
+      ctx.fill();
+      ctx.restore();
+
+      ctx.save();
+      ctx.rotate(mid);
+      ctx.textAlign = "right";
+      ctx.fillStyle = contrastText(item.color);
+      ctx.font = `600 ${Math.max(20, Math.min(34, 500 / n))}px Outfit, sans-serif`;
+      const label = item.text.length > 16 ? item.text.slice(0, 15) + "…" : item.text;
+      ctx.fillText(label, r - 30, 10);
+      ctx.restore();
+    });
+  }
+
+  ctx.beginPath();
+  ctx.arc(0, 0, r + 8, 0, Math.PI * 2);
+  const rim = ctx.createLinearGradient(-r, -r, r, r);
+  rim.addColorStop(0, "#fff1b8");
+  rim.addColorStop(0.4, "#c9a45a");
+  rim.addColorStop(1, "#6a4e1c");
+  ctx.strokeStyle = rim;
+  ctx.lineWidth = 18;
+  ctx.stroke();
+
+  // glass highlight
+  ctx.beginPath();
+  ctx.arc(-r * 0.18, -r * 0.22, r * 0.92, -Math.PI * 0.15, Math.PI * 0.55);
+  ctx.strokeStyle = "rgba(255,255,255,0.16)";
+  ctx.lineWidth = 22;
+  ctx.stroke();
+  ctx.restore();
+}
+
+function escapeAttr(s) {
+  return String(s)
+    .replace(/&/g, "\u0026amp;")
+    .replace(/"/g, "\u0026quot;")
+    .replace(/</g, "\u0026lt;");
+}
+
+function countLabel(text, arr) {
+  return arr.filter(x => x.text === text).length;
+}
+
+function renderList() {
+  titleEl.value = state.title;
+  listEl.innerHTML = "";
+  if (!state.items.length) {
+    listEl.innerHTML = `<p class="empty">No slices left on the drum. Restore a hit or add prizes.</p>`;
+    return;
+  }
+  state.items.forEach(item => {
+    const row = document.createElement("div");
+    row.className = "item";
+    row.innerHTML = `
+      <span class="swatch" style="background:${item.color}"></span>
+      <input value="${escapeAttr(item.text)}" data-id="${item.id}" />
+      <span class="qty">×${countLabel(item.text, state.items)}</span>
+      <button class="btn-tiny del" data-del="${item.id}" type="button" aria-label="Remove">✕</button>
+    `;
+    listEl.appendChild(row);
+  });
+}
+
+function renderNames() {
+  nameListEl.innerHTML = "";
+  if (!state.names.length) {
+    nameListEl.innerHTML = `<p class="empty">No names yet. Add people after the prizes are set — hits will be tagged with whoever this spin is for.</p>`;
+  } else {
+    state.names.forEach(n => {
+      const row = document.createElement("div");
+      row.className = "item player";
+      row.innerHTML = `
+        <span class="swatch" style="background:#e8c36a"></span>
+        <input value="${escapeAttr(n.text)}" data-nameid="${n.id}" />
+        <button class="btn-tiny del" data-delname="${n.id}" type="button" aria-label="Remove">✕</button>
+      `;
+      nameListEl.appendChild(row);
+    });
+  }
+  const prev = state.currentNameId;
+  playerSel.innerHTML = `<option value="">Unassigned</option>` +
+    state.names.map(n => `<option value="${n.id}">${escapeAttr(n.text)}</option>`).join("");
+  if (prev && state.names.some(n => n.id === prev)) playerSel.value = prev;
+  else if (state.names[0]) {
+    state.currentNameId = state.names[0].id;
+    playerSel.value = state.currentNameId;
+  } else {
+    state.currentNameId = null;
+    playerSel.value = "";
+  }
+}
+
+function nameText(id) {
+  const n = state.names.find(x => x.id === id);
+  return n ? n.text : "";
+}
+
+function renderHits() {
+  hitsEl.innerHTML = "";
+  if (!state.hits.length) {
+    hitsEl.innerHTML = `<p class="empty">Hits appear here after a spin. The slice is pulled off the wheel.</p>`;
+    return;
+  }
+  state.hits.forEach(h => {
+    const el = document.createElement("div");
+    el.className = "hit-item";
+    const opts = `<option value="">Unassigned</option>` +
+      state.names.map(n => `<option value="${escapeAttr(n.text)}" ${n.text === h.who ? "selected" : ""}>${escapeAttr(n.text)}</option>`).join("");
+    el.innerHTML = `
+      <div>
+        <b>${escapeAttr(h.text)}</b>
+        <span>${h.at ? new Date(h.at).toLocaleString() : ""}</span>
+      </div>
+      <div class="lib-actions">
+        <select data-hitwho="${h.id}">${opts}</select>
+        <button class="btn-tiny" data-restore="${h.id}" type="button">Restore</button>
+      </div>
+    `;
+    hitsEl.appendChild(el);
+  });
+}
+
+function renderBoard() {
+  const on = document.getElementById("wheelChips");
+  const off = document.getElementById("hitChips");
+  on.innerHTML = state.items.length
+    ? state.items.map(i => `<span class="chip"><i style="background:${i.color}"></i>${escapeAttr(i.text)}</span>`).join("")
+    : `<span class="empty">Nothing on the drum</span>`;
+  off.innerHTML = state.hits.length
+    ? state.hits.map(h => `<span class="chip"><i style="background:${h.color}"></i>${escapeAttr(h.text)}${h.who ? ` <em>· ${escapeAttr(h.who)}</em>` : ""}</span>`).join("")
+    : `<span class="empty">No hits yet</span>`;
+}
+
+function renderLibrary() {
+  const lib = loadLibrary();
+  libraryEl.innerHTML = "";
+  if (!lib.length) {
+    libraryEl.innerHTML = `<p class="hint">Saved wheels show up here. Hit “Save to library” after you compose one.</p>`;
+    return;
+  }
+  lib.forEach(w => {
+    const el = document.createElement("div");
+    el.className = "lib-item";
+    el.innerHTML = `
+      <div>
+        <b>${escapeAttr(w.title || "Untitled")}</b>
+        <span>${(w.items || []).length} on wheel · ${(w.hits || []).length} hits · ${w.updated ? new Date(w.updated).toLocaleDateString() : ""}</span>
+      </div>
+      <div class="lib-actions">
+        <button class="btn-tiny" data-load="${w.id}" type="button">Open</button>
+        <button class="btn-tiny btn-danger" data-forget="${w.id}" type="button">Delete</button>
+      </div>
+    `;
+    libraryEl.appendChild(el);
+  });
+}
+
+function renderAll() {
+  renderList();
+  renderNames();
+  renderHits();
+  renderBoard();
+  refreshShareFields();
+  drawWheel();
+  renderLibrary();
+}
+
+function addItem(text, qty) {
+  const t = (text || "").trim();
+  if (!t) return;
+  const count = Math.max(1, Math.min(20, parseInt(qty, 10) || 1));
+  const color = colorForLabel(t, state.items.length);
+  for (let i = 0; i < count; i += 1) {
+    state.items.push({ id: uid(), text: t.slice(0, 60), color });
+  }
+  renderAll();
+}
+
+function addName(text) {
+  const t = (text || "").trim();
+  if (!t) return;
+  state.names.push({ id: uid(), text: t.slice(0, 40) });
+  if (!state.currentNameId) state.currentNameId = state.names[state.names.length - 1].id;
+  renderAll();
+}
+
+function winnerAtPointer() {
+  const n = state.items.length;
+  if (!n) return null;
+  const slice = (Math.PI * 2) / n;
+  const norm = ((-state.angle) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+  return state.items[Math.floor(norm / slice) % n];
+}
+
+function advanceName() {
+  if (!state.names.length) return;
+  const idx = state.names.findIndex(n => n.id === state.currentNameId);
+  const next = state.names[(idx + 1) % state.names.length];
+  state.currentNameId = next.id;
+  playerSel.value = next.id;
+}
+
+function pegIndexAtPointer(angle) {
+  const n = Math.max(state.items.length, 1);
+  const slice = (Math.PI * 2) / n;
+  const norm = ((-angle) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+  return Math.floor(norm / slice) % n;
+}
+
+function spin() {
+  if (state.spinning) return;
+  if (!state.items.length) {
+    toast("Add prizes to the wheel first");
+    return;
+  }
+  state.spinning = true;
+  document.getElementById("spinBtn").disabled = true;
+  document.getElementById("wheel3d").classList.add("spinning");
+  if (window.LuminaAudio) LuminaAudio.start();
+
+  // Impulse + drag + peg clicks. Units: radians, seconds.
+  let omega = 16 + Math.random() * 14; // initial angular velocity
+  const linDrag = 0.22 + Math.random() * 0.08; // axle friction
+  const quadDrag = 0.045 + Math.random() * 0.02; // air / felt
+  const catchSpeed = 1.15;
+  const restSpeed = 0.12;
+  let lastPeg = pegIndexAtPointer(state.angle);
+  let last = performance.now();
+  let idle = 0;
+
+  function frame(now) {
+    let dt = (now - last) / 1000;
+    last = now;
+    if (dt > 0.05) dt = 0.05;
+
+    omega -= (linDrag + quadDrag * omega * omega) * dt;
+    if (omega < 0) omega = 0;
+    state.angle += omega * dt;
+
+    const peg = pegIndexAtPointer(state.angle);
+    if (peg !== lastPeg) {
+      lastPeg = peg;
+      const strength = Math.min(1, omega / 18);
+      if (window.LuminaAudio && LuminaAudio.pegTick) LuminaAudio.pegTick(strength);
+      // Peg slaps the flapper: lose a bite of speed. Near the end it can catch.
+      omega *= 0.86 + 0.08 * strength;
+      if (omega < catchSpeed) {
+        omega *= 0.55;
+        if (omega < restSpeed * 3) omega = 0;
+      }
+    }
+
+    drawWheel();
+
+    if (omega <= restSpeed) {
+      idle += dt;
+      if (idle > 0.18) {
+        finishSpin();
+        return;
+      }
+    } else {
+      idle = 0;
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
+
+function finishSpin() {
+  state.spinning = false;
+  document.getElementById("spinBtn").disabled = false;
+  document.getElementById("wheel3d").classList.remove("spinning");
+  if (window.LuminaAudio) LuminaAudio.stop();
+  const w = winnerAtPointer();
+  if (!w) return;
+  const who = nameText(state.currentNameId);
+  const at = new Date().toISOString();
+  state.items = state.items.filter(x => x.id !== w.id);
+  state.hits.unshift({ id: uid(), text: w.text, color: w.color, who, at });
+  state.lastWinner = w.text;
+  state.lastWho = who;
+  state.lastAt = at;
+  if (who) advanceName();
+  renderAll();
+  reveal(w.text, who, at);
+}
+
+function reveal(prize, who, at) {
+  document.getElementById("winnerName").textContent = prize;
+  document.getElementById("winnerWho").textContent = who ? `Assigned to ${who}` : "No name assigned this spin";
+  document.getElementById("modalEyebrow").textContent = state.title || "Hit";
+  document.getElementById("winnerMeta").textContent = new Date(at).toLocaleString();
+  document.getElementById("modal").classList.add("open");
+  burstConfetti();
+  history.replaceState(null, "", productUrl());
+}
+
+function restoreHit(id) {
+  const hit = state.hits.find(h => h.id === id);
+  if (!hit) return;
+  state.hits = state.hits.filter(h => h.id !== id);
+  state.items.push({ id: uid(), text: hit.text, color: hit.color || colorForLabel(hit.text, state.items.length) });
+  renderAll();
+  toast("Returned to the wheel");
+}
+
+function toast(msg) {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  setTimeout(() => el.classList.remove("show"), 1700);
+}
+
+async function copyText(value) {
+  if (!value) { toast("Nothing to copy yet"); return; }
+  try {
+    await navigator.clipboard.writeText(value);
+    toast("Link copied");
+  } catch {
+    toast("Copy failed — select the field instead");
+  }
+}
+
+async function shareNative(kind) {
+  const url = kind === "result" ? document.getElementById("shareResult").value : productUrl();
+  if (!url) { toast("Spin first to share a result"); return; }
+  const title = kind === "result" ? `${state.title}: ${state.lastWinner}` : state.title;
+  const text = kind === "result"
+    ? `${state.lastWinner}${state.lastWho ? " → " + state.lastWho : ""}`
+    : `Spin my wheel: ${state.title}`;
+  if (navigator.share) {
+    try {
+      await navigator.share({ title, text, url });
+      return;
+    } catch (err) {
+      if (err && err.name === "AbortError") return;
+    }
+  }
+  copyText(url);
+}
+
+function burstConfetti() {
+  const c = document.getElementById("confetti");
+  const x = c.getContext("2d");
+  const dpr = window.devicePixelRatio || 1;
+  c.width = c.clientWidth * dpr;
+  c.height = c.clientHeight * dpr;
+  const bits = Array.from({ length: 90 }, () => ({
+    x: Math.random() * c.width,
+    y: -Math.random() * c.height,
+    v: 1.5 + Math.random() * 3,
+    s: 4 + Math.random() * 7,
+    a: Math.random() * Math.PI,
+    col: PALETTES[state.palette][Math.floor(Math.random() * 10)]
+  }));
+  let frames = 0;
+  (function tick() {
+    x.clearRect(0, 0, c.width, c.height);
+    bits.forEach(b => {
+      b.y += b.v * dpr;
+      b.a += 0.08;
+      x.save();
+      x.translate(b.x, b.y);
+      x.rotate(b.a);
+      x.fillStyle = b.col;
+      x.fillRect(-b.s / 2, -b.s / 2, b.s, b.s * 0.6);
+      x.restore();
+    });
+    if (++frames < 160) requestAnimationFrame(tick);
+    else x.clearRect(0, 0, c.width, c.height);
+  })();
+}
+
+function setTab(name) {
+  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.dataset.tab === name));
+  document.querySelectorAll(".pane").forEach(p => p.classList.toggle("active", p.id === "pane-" + name));
+}
+
+document.getElementById("addBtn").onclick = () => {
+  addItem(newItemEl.value, newQtyEl.value);
+  newItemEl.value = "";
+  newQtyEl.value = "1";
+  newItemEl.focus();
+};
+newItemEl.addEventListener("keydown", e => {
+  if (e.key === "Enter") {
+    addItem(newItemEl.value, newQtyEl.value);
+    newItemEl.value = "";
+    newQtyEl.value = "1";
+  }
+});
+document.getElementById("addNameBtn").onclick = () => {
+  addName(newNameEl.value);
+  newNameEl.value = "";
+  newNameEl.focus();
+};
+newNameEl.addEventListener("keydown", e => {
+  if (e.key === "Enter") {
+    addName(newNameEl.value);
+    newNameEl.value = "";
+  }
+});
+titleEl.addEventListener("input", () => {
+  state.title = titleEl.value.slice(0, 80);
+  refreshShareFields();
+});
+playerSel.addEventListener("change", () => {
+  state.currentNameId = playerSel.value || null;
+});
+listEl.addEventListener("input", e => {
+  const item = state.items.find(x => x.id === e.target.dataset.id);
+  if (item) {
+    item.text = e.target.value.slice(0, 60);
+    item.color = colorForLabel(item.text, state.items.indexOf(item));
+  }
+  drawWheel();
+  renderBoard();
+  refreshShareFields();
+});
+listEl.addEventListener("click", e => {
+  const id = e.target.dataset.del;
+  if (!id) return;
+  state.items = state.items.filter(x => x.id !== id);
+  renderAll();
+});
+nameListEl.addEventListener("input", e => {
+  const n = state.names.find(x => x.id === e.target.dataset.nameid);
+  if (n) n.text = e.target.value.slice(0, 40);
+  renderNames();
+  renderHits();
+  renderBoard();
+});
+nameListEl.addEventListener("click", e => {
+  const id = e.target.dataset.delname;
+  if (!id) return;
+  state.names = state.names.filter(x => x.id !== id);
+  if (state.currentNameId === id) state.currentNameId = state.names[0] ? state.names[0].id : null;
+  renderAll();
+});
+hitsEl.addEventListener("change", e => {
+  const id = e.target.dataset.hitwho;
+  if (!id) return;
+  const hit = state.hits.find(h => h.id === id);
+  if (hit) hit.who = e.target.value;
+  renderBoard();
+  refreshShareFields();
+});
+hitsEl.addEventListener("click", e => {
+  if (e.target.dataset.restore) restoreHit(e.target.dataset.restore);
+});
+libraryEl.addEventListener("click", e => {
+  if (e.target.dataset.load) loadWheel(e.target.dataset.load);
+  if (e.target.dataset.forget) deleteWheel(e.target.dataset.forget);
+});
+document.getElementById("spinBtn").onclick = spin;
+document.getElementById("shuffleBtn").onclick = () => {
+  state.palette = (state.palette + 1) % PALETTES.length;
+  const pal = PALETTES[state.palette];
+  const map = {};
+  let i = 0;
+  state.items.forEach(it => {
+    if (!map[it.text]) map[it.text] = pal[i++ % pal.length];
+    it.color = map[it.text];
+  });
+  state.hits.forEach(h => { h.color = map[h.text] || colorForLabel(h.text, 0); });
+  renderAll();
+};
+document.getElementById("saveBtn").onclick = () => { persistCurrent(); toast("Saved to library"); };
+document.getElementById("newBtn").onclick = newWheel;
+document.getElementById("muteBtn").onclick = () => {
+  const next = !LuminaAudio.isMuted();
+  LuminaAudio.setMuted(next);
+  const btn = document.getElementById("muteBtn");
+  btn.textContent = next ? "Sound off" : "Sound on";
+  btn.setAttribute("aria-pressed", String(!next));
+};
+document.getElementById("closeModal").onclick = () => document.getElementById("modal").classList.remove("open");
+document.getElementById("modal").addEventListener("click", e => {
+  if (e.target.id === "modal") e.target.classList.remove("open");
+});
+document.querySelectorAll("[data-copy]").forEach(btn => {
+  btn.addEventListener("click", () => copyText(document.getElementById(btn.dataset.copy).value));
+});
+document.getElementById("shareProductBtn").onclick = () => shareNative("product");
+document.getElementById("shareResultBtn").onclick = () => shareNative("result");
+document.getElementById("shareResultModal").onclick = () => shareNative("result");
+document.querySelectorAll(".tab").forEach(tab => tab.addEventListener("click", () => setTab(tab.dataset.tab)));
+
+(function boot() {
+  const params = new URLSearchParams(location.search);
+  const packed = params.get("w") || params.get("r");
+  const data = packed ? decodePayload(packed) : null;
+  if (data) applyDecoded(data);
+  renderAll();
+  if (params.get("r") && state.lastWinner) {
+    document.getElementById("winnerName").textContent = state.lastWinner;
+    document.getElementById("winnerWho").textContent = state.lastWho ? `Assigned to ${state.lastWho}` : "Shared result";
+    document.getElementById("modalEyebrow").textContent = (state.title || "Result") + " · shared result";
+    document.getElementById("winnerMeta").textContent = state.lastAt
+      ? new Date(state.lastAt).toLocaleString()
+      : "Opened from a result link";
+    document.getElementById("modal").classList.add("open");
+    burstConfetti();
+  }
+  // standalone build — no service worker
+})();
+
+  </script>
+</body>
+</html>
